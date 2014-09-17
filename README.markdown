@@ -1,6 +1,6 @@
 # cabal-dependency-licenses
 
-Compose a list of a project's dependencies with their licenses
+Compose a list of a project's transitive dependencies with their licenses
 
 ## Installation
 

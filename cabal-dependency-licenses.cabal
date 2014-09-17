@@ -1,19 +1,21 @@
 Name:     cabal-dependency-licenses
-Version:  0.1.0.0
-Synopsis: Compose a list of a project's dependencies with their licenses
+Version:  0.1.0.1
+Synopsis: Compose a list of a project's transitive dependencies with their licenses
 
 Description:
-  Compose a list of a project's dependencies with their licenses
+  Compose a list of a project's transitive dependencies with their licenses
 
-License:             BSD3
-License-file:        LICENSE
-Author:              Jasper Van der Jeugt <m@jaspervdj.be>
-Maintainer:          Jasper Van der Jeugt <m@jaspervdj.be>
-Copyright:           2014 Jasper Van der Jeugt
-Category:            Distribution
-Build-type:          Simple
-Extra-source-files:  CHANGELOG
-Cabal-version:       >= 1.10
+License:            BSD3
+License-file:       LICENSE
+Author:             Jasper Van der Jeugt <m@jaspervdj.be>
+Maintainer:         Jasper Van der Jeugt <m@jaspervdj.be>
+Copyright:          2014 Jasper Van der Jeugt
+Category:           Distribution
+Build-type:         Simple
+Extra-source-files: CHANGELOG
+Cabal-version:      >= 1.10
+Homepage:           http://github.com/jaspervdj/cabal-dependency-licenses
+Bug-reports:        http://github.com/jaspervdj/cabal-dependency-licenses/issues
 
 Executable cabal-dependency-licenses
   Hs-source-dirs:      src
@@ -27,3 +29,7 @@ Executable cabal-dependency-licenses
     base       >= 4    && < 5,
     directory  >= 1.2  && < 1.3,
     filepath   >= 1.3  && < 1.4
+
+Source-repository head
+    Type:     git
+    Location: https://github.com/jaspervdj/cabal-dependency-licenses

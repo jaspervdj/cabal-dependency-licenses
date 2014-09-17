@@ -1,2 +1,6 @@
+- 0.1.0.1
+    * Add links to github in cabal file
+    * Tweak project description
+
 - 0.1.0.0
     * Initial release
