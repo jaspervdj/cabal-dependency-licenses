@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 --------------------------------------------------------------------------------
 module Main
     ( main
@@ -35,10 +36,15 @@ existsCabalFile = do
     contents <- getDirectoryContents "."
     return $ any ((== ".cabal") . takeExtension) contents
 
-
 --------------------------------------------------------------------------------
+#if MIN_VERSION_Cabal(1,22,0)
+type PackageIndex a = Cabal.PackageIndex (InstalledPackageInfo.InstalledPackageInfo_ a)
+#else
+type PackageIndex a = Cabal.PackageIndex
+#endif
+
 findTransitiveDependencies
-    :: Cabal.PackageIndex
+    :: PackageIndex a
     -> Set Cabal.InstalledPackageId
     -> Set Cabal.InstalledPackageId
 findTransitiveDependencies pkgIdx set0 = go Set.empty (Set.toList set0)
