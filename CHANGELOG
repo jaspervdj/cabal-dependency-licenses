@@ -1,3 +1,6 @@
+- 0.1.1.2
+    * Allow use with older Cabal >= 1.18
+
 - 0.1.1.1
     * Allow use with filepath-1.4
 
