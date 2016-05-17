@@ -37,7 +37,9 @@ existsCabalFile = do
     return $ any ((== ".cabal") . takeExtension) contents
 
 --------------------------------------------------------------------------------
-#if MIN_VERSION_Cabal(1,22,0)
+#if MIN_VERSION_Cabal(1,24,0)
+type PackageIndex a = Cabal.PackageIndex InstalledPackageInfo.InstalledPackageInfo
+#elif MIN_VERSION_Cabal(1,22,0)
 type PackageIndex a = Cabal.PackageIndex (InstalledPackageInfo.InstalledPackageInfo_ a)
 #else
 type PackageIndex a = Cabal.PackageIndex

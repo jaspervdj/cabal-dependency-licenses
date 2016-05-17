@@ -1,3 +1,6 @@
+- 0.1.2.0
+    * Allow use with Cabal >= 1.24
+
 - 0.1.1.2
     * Allow use with older Cabal >= 1.18
 
