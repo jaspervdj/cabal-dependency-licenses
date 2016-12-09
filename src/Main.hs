@@ -7,8 +7,9 @@ module Main
 
 --------------------------------------------------------------------------------
 import           Control.Monad                      (forM_, unless)
-import           Data.List                          (foldl', sort)
+import           Data.List                          (foldl', sortBy)
 import           Data.Maybe                         (catMaybes)
+import           Data.Ord                           (comparing)
 import           Data.Set                           (Set)
 import qualified Data.Set                           as Set
 import           Distribution.InstalledPackageInfo  (InstalledPackageInfo)
@@ -114,12 +115,16 @@ printDependencyLicenseList byLicense =
         putStrLn $ "# " ++ Cabal.display license
         putStrLn ""
 
-        let sortedNames = sort $ map getName ipis
-        forM_ sortedNames $ \name -> putStrLn $ "- " ++ name
+        let sorted = sortBy (comparing getName) ipis
+        forM_ sorted $ \ipi -> do
+            let synopsis = getSynopsis ipi
+            putStrLn $ "- " ++ getName ipi ++ " (" ++ synopsis ++ ")"
         putStrLn ""
   where
     getName =
         Cabal.display . Cabal.pkgName . InstalledPackageInfo.sourcePackageId
+
+    getSynopsis = InstalledPackageInfo.synopsis
 
 
 --------------------------------------------------------------------------------
