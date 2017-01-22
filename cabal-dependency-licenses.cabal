@@ -1,5 +1,5 @@
 Name:     cabal-dependency-licenses
-Version:  0.1.2.0
+Version:  0.2.0.0
 Synopsis: Compose a list of a project's transitive dependencies with their licenses
 
 Description:
