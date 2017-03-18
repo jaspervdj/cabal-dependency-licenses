@@ -118,7 +118,11 @@ printDependencyLicenseList byLicense =
         let sorted = sortBy (comparing getName) ipis
         forM_ sorted $ \ipi -> do
             let synopsis = getSynopsis ipi
-            putStrLn $ "- " ++ getName ipi ++ " (" ++ synopsis ++ ")"
+                copyrightStr = InstalledPackageInfo.copyright ipi
+                crNotice = case null copyrightStr of
+                    True -> ", no copyright notice available"
+                    False -> ", Copyright " ++ copyrightStr
+            putStrLn $ "- " ++ getName ipi ++ " (" ++ synopsis ++ crNotice ++ ")"
         putStrLn ""
   where
     getName =
