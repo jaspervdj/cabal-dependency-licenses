@@ -6,7 +6,7 @@ module Main
 
 
 --------------------------------------------------------------------------------
-import           Control.Monad                      (forM_, unless)
+import           Control.Monad                      (forM_, when)
 import           Data.List                          (foldl', sortBy)
 import           Data.Maybe                         (catMaybes)
 import           Data.Ord                           (comparing)
@@ -20,22 +20,21 @@ import qualified Distribution.Simple.Configure      as Cabal
 import qualified Distribution.Simple.LocalBuildInfo as Cabal
 import qualified Distribution.Simple.PackageIndex   as Cabal
 import qualified Distribution.Text                  as Cabal
-import           System.Directory                   (getDirectoryContents)
+import           System.Directory                   (doesDirectoryExist, doesFileExist)
 import           System.Exit                        (exitFailure)
-import           System.FilePath                    (takeExtension)
-import           System.IO                          (hPutStrLn, stderr)
+import           System.FilePath                    ((</>), takeDirectory)
 
-
---------------------------------------------------------------------------------
-putErrLn :: String -> IO ()
-putErrLn = hPutStrLn stderr
-
+import qualified System.FilePath.Find as F
 
 --------------------------------------------------------------------------------
-existsCabalFile :: IO Bool
-existsCabalFile = do
-    contents <- getDirectoryContents "."
-    return $ any ((== ".cabal") . takeExtension) contents
+existsDistDir :: IO Bool
+existsDistDir = do
+    e <- doesDirectoryExist "dist"
+    f <- doesFileExist $ "dist" </> "setup-config"
+    return $ e && f
+
+existsDistNewstyleDir :: IO Bool
+existsDistNewstyleDir = doesDirectoryExist "dist-newstyle"
 
 --------------------------------------------------------------------------------
 #if MIN_VERSION_Cabal(1,24,0)
@@ -130,18 +129,32 @@ printDependencyLicenseList byLicense =
 
     getSynopsis = InstalledPackageInfo.synopsis
 
-
---------------------------------------------------------------------------------
-main :: IO ()
-main = do
-    -- Check that we're in a directory with a cabal file
-    existsCabalFile' <- existsCabalFile
-    unless existsCabalFile' $ do
-        putErrLn "No cabal file found in the current directory"
-        exitFailure
-
+handleDist :: IO ()
+handleDist = do
     -- Get info and print dependency license list
     lbi <- Cabal.getPersistBuildConfig "dist"
     printDependencyLicenseList $
         groupByLicense $
         getDependencyInstalledPackageInfos lbi
+
+handleDistNewstyle :: IO ()
+handleDistNewstyle = do
+    configs <- F.find (return True) (F.fileName F.==? "setup-config") "dist-newstyle"
+    forM_ configs $ \configPath -> do
+        lbi <- Cabal.getPersistBuildConfig $ takeDirectory configPath
+        printDependencyLicenseList $
+            groupByLicense $
+            getDependencyInstalledPackageInfos lbi
+
+--------------------------------------------------------------------------------
+main :: IO ()
+main = do
+    existsDist <- existsDistDir
+    existsDistNewstyle <- existsDistNewstyleDir
+
+    when (not $ existsDist || existsDistNewstyle) $ do
+        putStrLn "Error: dist or dist-newstyle not found"
+        exitFailure
+
+    when existsDist handleDist
+    when existsDistNewstyle handleDistNewstyle
