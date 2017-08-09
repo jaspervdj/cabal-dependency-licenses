@@ -141,8 +141,11 @@ main = do
         putErrLn "No cabal file found in the current directory"
         exitFailure
 
+    -- Check if dist-newstyle should be preferred to dist
+    existsDistNewstyleDir' <- existsDistNewstyleDir
+
     -- Get info and print dependency license list
-    lbi <- Cabal.getPersistBuildConfig "dist"
+    lbi <- Cabal.getPersistBuildConfig (if existsDistNewstyleDir' then "dist-newstyle" else "dist")
     printDependencyLicenseList $
         groupByLicense $
         getDependencyInstalledPackageInfos lbi
