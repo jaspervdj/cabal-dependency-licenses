@@ -150,3 +150,8 @@ main = do
     printDependencyLicenseList $
         groupByLicense $
         getDependencyInstalledPackageInfos lbi
+  where
+    usage = do
+      putErrLn "Usage: cabal-dependency-licenses [DIST]"
+      putErrLn "  Print licensing information for the package described in *.cabal & configured in DIST (default: './dist')"
+      exitFailure
