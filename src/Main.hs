@@ -7,6 +7,7 @@ module Main
 
 --------------------------------------------------------------------------------
 import           Control.Monad                      (forM_, unless)
+import           Data.Foldable                      (toList)
 import           Data.List                          (foldl', sortBy)
 import           Data.Maybe                         (catMaybes)
 import           Data.Ord                           (comparing)
@@ -79,7 +80,7 @@ getDependencyInstalledPackageIds lbi =
     findTransitiveDependencies (Cabal.installedPkgs lbi) $
         Set.fromList
             [ installedPackageId
-            | (_, componentLbi, _)    <- Cabal.componentsConfigs lbi
+            | (componentLbi)    <- toList (Cabal.componentGraph lbi)
             , (installedPackageId, _) <- Cabal.componentPackageDeps componentLbi
             ]
 
