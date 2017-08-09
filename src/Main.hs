@@ -37,10 +37,10 @@ existsCabalFile = do
     contents <- getDirectoryContents "."
     return $ any ((== ".cabal") . takeExtension) contents
 
-existsCabalProjectFile :: IO Bool
-existsCabalProjectFile = do
+existsDistNewstyleDir :: IO Bool
+existsDistNewstyleDir = do
     contents <- getDirectoryContents "."
-    return $ any (== "cabal.project") contents
+    return $ any (== "dist-newstyle") contents
 
 --------------------------------------------------------------------------------
 #if MIN_VERSION_Cabal(1,24,0)
