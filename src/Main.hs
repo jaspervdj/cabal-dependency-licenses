@@ -9,7 +9,7 @@ module Main
 import           Control.Monad                      (forM_, unless)
 import           Data.Foldable                      (toList)
 import           Data.List                          (foldl', sortBy)
-import           Data.Maybe                         (catMaybes)
+import           Data.Maybe                         (catMaybes, fromMaybe, listToMaybe)
 import           Data.Ord                           (comparing)
 import           Data.Set                           (Set)
 import qualified Data.Set                           as Set
@@ -22,6 +22,7 @@ import qualified Distribution.Simple.LocalBuildInfo as Cabal
 import qualified Distribution.Simple.PackageIndex   as Cabal
 import qualified Distribution.Text                  as Cabal
 import           System.Directory                   (getDirectoryContents)
+import           System.Environment                 (getArgs)
 import           System.Exit                        (exitFailure)
 import           System.FilePath                    (takeExtension)
 import           System.IO                          (hPutStrLn, stderr)
@@ -37,11 +38,6 @@ existsCabalFile :: IO Bool
 existsCabalFile = do
     contents <- getDirectoryContents "."
     return $ any ((== ".cabal") . takeExtension) contents
-
-existsDistNewstyleDir :: IO Bool
-existsDistNewstyleDir = do
-    contents <- getDirectoryContents "."
-    return $ any (== "dist-newstyle") contents
 
 --------------------------------------------------------------------------------
 #if MIN_VERSION_Cabal(1,24,0)
@@ -142,11 +138,13 @@ main = do
         putErrLn "No cabal file found in the current directory"
         exitFailure
 
-    -- Check if dist-newstyle should be preferred to dist
-    existsDistNewstyleDir' <- existsDistNewstyleDir
+    args <- getArgs
+    unless (length args <= 1) $ usage
+
+    let distPref = fromMaybe "dist" (listToMaybe args)
 
     -- Get info and print dependency license list
-    lbi <- Cabal.getPersistBuildConfig (if existsDistNewstyleDir' then "dist-newstyle" else "dist")
+    lbi <- Cabal.getPersistBuildConfig distPref
     printDependencyLicenseList $
         groupByLicense $
         getDependencyInstalledPackageInfos lbi
