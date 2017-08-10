@@ -7,8 +7,9 @@ module Main
 
 --------------------------------------------------------------------------------
 import           Control.Monad                      (forM_, unless)
+import           Data.Foldable                      (toList)
 import           Data.List                          (foldl', sortBy)
-import           Data.Maybe                         (catMaybes)
+import           Data.Maybe                         (catMaybes, fromMaybe, listToMaybe)
 import           Data.Ord                           (comparing)
 import           Data.Set                           (Set)
 import qualified Data.Set                           as Set
@@ -21,6 +22,7 @@ import qualified Distribution.Simple.LocalBuildInfo as Cabal
 import qualified Distribution.Simple.PackageIndex   as Cabal
 import qualified Distribution.Text                  as Cabal
 import           System.Directory                   (getDirectoryContents)
+import           System.Environment                 (getArgs)
 import           System.Exit                        (exitFailure)
 import           System.FilePath                    (takeExtension)
 import           System.IO                          (hPutStrLn, stderr)
@@ -48,15 +50,15 @@ type PackageIndex a = Cabal.PackageIndex
 
 findTransitiveDependencies
     :: PackageIndex a
-    -> Set Cabal.InstalledPackageId
-    -> Set Cabal.InstalledPackageId
+    -> Set Cabal.UnitId
+    -> Set Cabal.UnitId
 findTransitiveDependencies pkgIdx set0 = go Set.empty (Set.toList set0)
   where
     go set []  = set
     go set (q : queue)
         | q `Set.member` set = go set queue
         | otherwise          =
-            case Cabal.lookupInstalledPackageId pkgIdx q of
+            case Cabal.lookupUnitId pkgIdx q of
                 Nothing  ->
                     -- Not found can mean that the package still needs to be
                     -- installed (e.g. a component of the target cabal package).
@@ -69,12 +71,12 @@ findTransitiveDependencies pkgIdx set0 = go Set.empty (Set.toList set0)
 
 --------------------------------------------------------------------------------
 getDependencyInstalledPackageIds
-    :: Cabal.LocalBuildInfo -> Set Cabal.InstalledPackageId
+    :: Cabal.LocalBuildInfo -> Set Cabal.UnitId
 getDependencyInstalledPackageIds lbi =
     findTransitiveDependencies (Cabal.installedPkgs lbi) $
         Set.fromList
             [ installedPackageId
-            | (_, componentLbi, _)    <- Cabal.componentsConfigs lbi
+            | (componentLbi)    <- toList (Cabal.componentGraph lbi)
             , (installedPackageId, _) <- Cabal.componentPackageDeps componentLbi
             ]
 
@@ -83,7 +85,7 @@ getDependencyInstalledPackageIds lbi =
 getDependencyInstalledPackageInfos
     :: Cabal.LocalBuildInfo -> [InstalledPackageInfo]
 getDependencyInstalledPackageInfos lbi = catMaybes $
-    map (Cabal.lookupInstalledPackageId pkgIdx) $
+    map (Cabal.lookupUnitId pkgIdx) $
     Set.toList (getDependencyInstalledPackageIds lbi)
   where
     pkgIdx = Cabal.installedPkgs lbi
@@ -136,8 +138,18 @@ main = do
         putErrLn "No cabal file found in the current directory"
         exitFailure
 
+    args <- getArgs
+    unless (length args <= 1) $ usage
+
+    let distPref = fromMaybe "dist" (listToMaybe args)
+
     -- Get info and print dependency license list
-    lbi <- Cabal.getPersistBuildConfig "dist"
+    lbi <- Cabal.getPersistBuildConfig distPref
     printDependencyLicenseList $
         groupByLicense $
         getDependencyInstalledPackageInfos lbi
+  where
+    usage = do
+      putErrLn "Usage: cabal-dependency-licenses [DIST]"
+      putErrLn "  Print licensing information for the package described in *.cabal & configured in DIST (default: './dist')"
+      exitFailure
