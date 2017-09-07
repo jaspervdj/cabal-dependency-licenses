@@ -1,5 +1,5 @@
 Name:     cabal-dependency-licenses
-Version:  0.2.0.0
+Version:  0.2.0.1
 Synopsis: Compose a list of a project's transitive dependencies with their licenses
 
 Description:
@@ -24,7 +24,7 @@ Executable cabal-dependency-licenses
   Ghc-options:         -Wall
 
   Build-depends:
-    Cabal      >= 1.24 && < 1.25,
+    Cabal      >= 2,
     containers >= 0.5  && < 0.6,
     base       >= 4    && < 5,
     directory  >= 1.2  && < 1.4,

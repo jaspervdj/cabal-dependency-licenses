@@ -12,6 +12,7 @@ import           Data.Maybe                         (catMaybes)
 import           Data.Ord                           (comparing)
 import           Data.Set                           (Set)
 import qualified Data.Set                           as Set
+import qualified Data.Map                           as Map
 import           Distribution.InstalledPackageInfo  (InstalledPackageInfo)
 import qualified Distribution.InstalledPackageInfo  as InstalledPackageInfo
 import qualified Distribution.License               as Cabal
@@ -73,7 +74,7 @@ getDependencyInstalledPackageIds lbi =
     findTransitiveDependencies (Cabal.installedPkgs lbi) $
         Set.fromList
             [ installedPackageId
-            | (_, componentLbi, _)    <- Cabal.componentsConfigs lbi
+            | componentLbi    <- concat (Map.elems (Cabal.componentNameMap lbi))
             , (installedPackageId, _) <- Cabal.componentPackageDeps componentLbi
             ]
 
