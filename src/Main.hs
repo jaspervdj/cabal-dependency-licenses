@@ -14,7 +14,9 @@ import           Data.Set                           (Set)
 import qualified Data.Set                           as Set
 import qualified Data.Map                           as Map
 import           Distribution.InstalledPackageInfo  (InstalledPackageInfo)
+import qualified Distribution.SPDX.License          as SPDX
 import qualified Distribution.InstalledPackageInfo  as InstalledPackageInfo
+import qualified Distribution.Pretty                as Pretty
 import qualified Distribution.License               as Cabal
 import qualified Distribution.Package               as Cabal
 import qualified Distribution.Simple.Configure      as Cabal
@@ -92,7 +94,7 @@ getDependencyInstalledPackageInfos lbi = catMaybes $
 --------------------------------------------------------------------------------
 groupByLicense
     :: [InstalledPackageInfo]
-    -> [(Cabal.License, [InstalledPackageInfo])]
+    -> [(Either SPDX.License Cabal.License, [InstalledPackageInfo])]
 groupByLicense = foldl'
     (\assoc ipi -> insert (InstalledPackageInfo.license ipi) ipi assoc) []
   where
@@ -108,11 +110,14 @@ groupByLicense = foldl'
 
 --------------------------------------------------------------------------------
 printDependencyLicenseList
-    :: [(Cabal.License, [InstalledPackageInfo])]
+    :: [(Either SPDX.License Cabal.License, [InstalledPackageInfo])]
     -> IO ()
 printDependencyLicenseList byLicense =
     forM_ byLicense $ \(license, ipis) -> do
-        putStrLn $ "# " ++ Cabal.display license
+        putStrLn $ "# " ++ case license of
+            Left l -> Pretty.prettyShow l
+            Right l -> Cabal.display l
+
         putStrLn ""
 
         let sorted = sortBy (comparing getName) ipis
