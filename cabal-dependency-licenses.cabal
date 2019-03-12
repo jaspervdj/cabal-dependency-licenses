@@ -1,14 +1,23 @@
 Name:     cabal-dependency-licenses
-Version:  0.2.0.1
+Version:  0.2.0.1.1
 Synopsis: Compose a list of a project's transitive dependencies with their licenses
 
 Description:
-  Compose a list of a project's transitive dependencies with their licenses
+            Compose a list of a project's transitive dependencies with their licenses
+            .
+            Note: this version differs from the original
+            implementation by Jasper Van der Jeugt in that it takes a
+            different approach to handling dist-newstyle, and it has
+            other enhancements such as SPDX handling.  The original
+            version is relatively unmaintained; this version contains
+            all substantive modifications to the original through 12
+            Mar 2019 (through commit 47e927b in the original
+            repository).
 
 License:            BSD3
 License-file:       LICENSE
 Author:             Jasper Van der Jeugt <m@jaspervdj.be>
-Maintainer:         Jasper Van der Jeugt <m@jaspervdj.be>
+Maintainer:         Jonathan Daugherty, Kevin Quick
 Copyright:          2014 Jasper Van der Jeugt
 Category:           Distribution
 Build-type:         Simple
@@ -33,4 +42,4 @@ Executable cabal-dependency-licenses
 
 Source-repository head
     Type:     git
-    Location: https://github.com/jaspervdj/cabal-dependency-licenses
+    Location: https://github.com/matterhorn-chat/cabal-dependency-licenses
