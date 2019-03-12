@@ -14,9 +14,11 @@ import           Data.Set                           (Set)
 import qualified Data.Set                           as Set
 import qualified Data.Map                           as Map
 import           Distribution.InstalledPackageInfo  (InstalledPackageInfo)
+#if MIN_VERSION_Cabal(2,2,0)
 import qualified Distribution.SPDX.License          as SPDX
-import qualified Distribution.InstalledPackageInfo  as InstalledPackageInfo
 import qualified Distribution.Pretty                as Pretty
+#endif
+import qualified Distribution.InstalledPackageInfo  as InstalledPackageInfo
 import qualified Distribution.License               as Cabal
 import qualified Distribution.Package               as Cabal
 import qualified Distribution.Simple.Configure      as Cabal
@@ -28,6 +30,22 @@ import           System.Exit                        (exitFailure)
 import           System.FilePath                    ((</>), takeDirectory)
 
 import qualified System.FilePath.Find as F
+
+----------------------------------------------------------------------
+-- The SPDX license support was only added in Cabal 2.2, so make some
+-- abstractions to handle older versions as well.
+
+prettySPDX :: SPDXLicense -> String
+packageLicense :: InstalledPackageInfo -> Either SPDXLicense Cabal.License
+#if MIN_VERSION_Cabal(2,2,0)
+type SPDXLicense = SPDX.License
+prettySPDX = Pretty.prettyShow
+packageLicense = InstalledPackageInfo.license
+#else
+type SPDXLicense = ()
+prettySPDX = fail "SPDX not defined in this Cabal version!"
+packageLicense = Right . InstalledPackageInfo.license
+#endif
 
 --------------------------------------------------------------------------------
 existsDistDir :: IO Bool
@@ -94,9 +112,9 @@ getDependencyInstalledPackageInfos lbi = catMaybes $
 --------------------------------------------------------------------------------
 groupByLicense
     :: [InstalledPackageInfo]
-    -> [(Either SPDX.License Cabal.License, [InstalledPackageInfo])]
+    -> [(Either SPDXLicense Cabal.License, [InstalledPackageInfo])]
 groupByLicense = foldl'
-    (\assoc ipi -> insert (InstalledPackageInfo.license ipi) ipi assoc) []
+    (\assoc ipi -> insert (packageLicense ipi) ipi assoc) []
   where
     -- 'Cabal.License' doesn't have an 'Ord' instance so we need to use an
     -- association list instead of 'Map'. The number of licenses probably won't
@@ -110,12 +128,12 @@ groupByLicense = foldl'
 
 --------------------------------------------------------------------------------
 printDependencyLicenseList
-    :: [(Either SPDX.License Cabal.License, [InstalledPackageInfo])]
+    :: [(Either SPDXLicense Cabal.License, [InstalledPackageInfo])]
     -> IO ()
 printDependencyLicenseList byLicense =
     forM_ byLicense $ \(license, ipis) -> do
         putStrLn $ "# " ++ case license of
-            Left l -> Pretty.prettyShow l
+            Left l -> prettySPDX l
             Right l -> Cabal.display l
 
         putStrLn ""
