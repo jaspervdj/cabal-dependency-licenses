@@ -50,15 +50,15 @@ type PackageIndex a = Cabal.PackageIndex
 
 findTransitiveDependencies
     :: PackageIndex a
-    -> Set Cabal.InstalledPackageId
-    -> Set Cabal.InstalledPackageId
+    -> Set Cabal.UnitId
+    -> Set Cabal.UnitId
 findTransitiveDependencies pkgIdx set0 = go Set.empty (Set.toList set0)
   where
     go set []  = set
     go set (q : queue)
         | q `Set.member` set = go set queue
         | otherwise          =
-            case Cabal.lookupInstalledPackageId pkgIdx q of
+            case Cabal.lookupUnitId pkgIdx q of
                 Nothing  ->
                     -- Not found can mean that the package still needs to be
                     -- installed (e.g. a component of the target cabal package).
@@ -70,14 +70,14 @@ findTransitiveDependencies pkgIdx set0 = go Set.empty (Set.toList set0)
 
 
 --------------------------------------------------------------------------------
-getDependencyInstalledPackageIds
-    :: Cabal.LocalBuildInfo -> Set Cabal.InstalledPackageId
-getDependencyInstalledPackageIds lbi =
+getDependencyUnitIds
+    :: Cabal.LocalBuildInfo -> Set Cabal.UnitId
+getDependencyUnitIds lbi =
     findTransitiveDependencies (Cabal.installedPkgs lbi) $
         Set.fromList
-            [ installedPackageId
+            [ unitId
             | componentLbi    <- concat (Map.elems (Cabal.componentNameMap lbi))
-            , (installedPackageId, _) <- Cabal.componentPackageDeps componentLbi
+            , (unitId, _) <- Cabal.componentPackageDeps componentLbi
             ]
 
 
@@ -85,8 +85,8 @@ getDependencyInstalledPackageIds lbi =
 getDependencyInstalledPackageInfos
     :: Cabal.LocalBuildInfo -> [InstalledPackageInfo]
 getDependencyInstalledPackageInfos lbi = catMaybes $
-    map (Cabal.lookupInstalledPackageId pkgIdx) $
-    Set.toList (getDependencyInstalledPackageIds lbi)
+    map (Cabal.lookupUnitId pkgIdx) $
+    Set.toList (getDependencyUnitIds lbi)
   where
     pkgIdx = Cabal.installedPkgs lbi
 
