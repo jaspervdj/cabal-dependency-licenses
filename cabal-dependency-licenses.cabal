@@ -23,8 +23,8 @@ Category:           Distribution
 Build-type:         Simple
 Extra-source-files: CHANGELOG
 Cabal-version:      >= 1.10
-Homepage:           http://github.com/jaspervdj/cabal-dependency-licenses
-Bug-reports:        http://github.com/jaspervdj/cabal-dependency-licenses/issues
+Homepage:           http://github.com/matterhorn-chat/cabal-dependency-licenses
+Bug-reports:        http://github.com/matterhorn-chat/cabal-dependency-licenses/issues
 
 Executable cabal-dependency-licenses
   Hs-source-dirs:      src
