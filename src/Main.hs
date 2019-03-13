@@ -32,6 +32,7 @@ import           System.FilePath                    ((</>), takeDirectory)
 import qualified System.FilePath.Find as F
 
 ----------------------------------------------------------------------
+
 -- The SPDX license support was only added in Cabal 2.2, so make some
 -- abstractions to handle older versions as well.
 
@@ -45,6 +46,16 @@ packageLicense = InstalledPackageInfo.license
 type SPDXLicense = ()
 prettySPDX = fail "SPDX not defined in this Cabal version!"
 packageLicense = Right . InstalledPackageInfo.license
+#endif
+
+-- The componentNameMap was introduced in a refactoring
+-- (https://github.com/haskell/cabal/commit/d94ddc0) circa v2.0.
+
+components :: Cabal.LocalBuildInfo -> [Cabal.ComponentLocalBuildInfo]
+#if MIN_VERSION_Cabal(2,0,0)
+components = concat . Map.elems . Cabal.componentNameMap
+#else
+components = map (\(_,i,_) -> i) . Cabal.componentsConfigs
 #endif
 
 --------------------------------------------------------------------------------
@@ -94,7 +105,7 @@ getDependencyUnitIds lbi =
     findTransitiveDependencies (Cabal.installedPkgs lbi) $
         Set.fromList
             [ unitId
-            | componentLbi    <- concat (Map.elems (Cabal.componentNameMap lbi))
+            | componentLbi <- components lbi
             , (unitId, _) <- Cabal.componentPackageDeps componentLbi
             ]
 
