@@ -2,6 +2,13 @@
 
 Compose a list of a project's transitive dependencies with their licenses
 
+**Important**: this was a quick tool I put together with a specific goal in
+mind.  **It is no longer actively maintained**.  You can use [cabal-plan]
+as an alternative (the `license-report` command in particular).
+
+[cabal-plan]: https://hackage.haskell.org/package/cabal-plan#description
+
+
 ## Installation
 
 Through Hackage:
