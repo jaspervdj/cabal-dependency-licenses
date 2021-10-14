@@ -1,4 +1,5 @@
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
 --------------------------------------------------------------------------------
 module Main
     ( main
@@ -14,6 +15,9 @@ import           Data.Set                           (Set)
 import qualified Data.Set                           as Set
 import qualified Data.Map                           as Map
 import           Distribution.InstalledPackageInfo  (InstalledPackageInfo)
+#if MIN_VERSION_Cabal(2,0,0)
+import qualified Distribution.Utils.ShortText       as ShortText
+#endif
 #if MIN_VERSION_Cabal(2,2,0)
 import qualified Distribution.SPDX.License          as SPDX
 import qualified Distribution.Pretty                as Pretty
@@ -30,6 +34,14 @@ import           System.Exit                        (exitFailure)
 import           System.FilePath                    ((</>), takeDirectory)
 
 import qualified System.FilePath.Find as F
+
+#if MIN_VERSION_Cabal(2,0,0)
+fromShortText :: ShortText.ShortText -> String
+fromShortText = ShortText.fromShortText
+#else
+fromShortText :: String -> String
+fromShortText = id
+#endif
 
 ----------------------------------------------------------------------
 
@@ -151,8 +163,8 @@ printDependencyLicenseList byLicense =
 
         let sorted = sortBy (comparing getName) ipis
         forM_ sorted $ \ipi -> do
-            let synopsis = getSynopsis ipi
-                copyrightStr = InstalledPackageInfo.copyright ipi
+            let synopsis = fromShortText $ getSynopsis ipi
+                copyrightStr = fromShortText $ InstalledPackageInfo.copyright ipi
                 crNotice = case null copyrightStr of
                     True -> ", no copyright notice available"
                     False -> ", Copyright " ++ copyrightStr
